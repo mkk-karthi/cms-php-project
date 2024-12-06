@@ -1,6 +1,6 @@
 <?php
+require_once "../Models/Users.php";
 
-require "../Models/Users.php";
 class UserController
 {
 
@@ -148,6 +148,8 @@ class UserController
             $update = Users::update(["status" => $status], [["id", "=", $id]]);
 
             if ($update) {
+
+                // send notification for user
                 $name = $user["name"];
                 $protocol = stripos($_SERVER['SERVER_PROTOCOL'], 'https') === 0 ? 'https://' : 'http://';
                 $link = $protocol . $_SERVER["HTTP_HOST"];

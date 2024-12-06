@@ -85,12 +85,12 @@ class Helper
 
             // send the message
             if (!$mail->send()) {
-                self::log("\nMail: $to_mail\nMessage could not be sent. Error: " . $mail->ErrorInfo, $log_path);
+                self::log("\n\n" . date("Y-m-d H:i:s") . " Mail: $to_mail\nMessage could not be sent. Error: " . $mail->ErrorInfo, $log_path);
             } else {
-                self::log("\nMail: $to_mail\nMessage has been sent", $log_path);
+                self::log("\n\n" . date("Y-m-d H:i:s") . " Mail: $to_mail\nMessage has been sent", $log_path);
             }
         } catch (Exception $e) {
-            self::log("\nMail: $to_mail\nMessage could not be sent. Error: " . $mail->ErrorInfo, $log_path);
+            self::log("\n\n" . date("Y-m-d H:i:s") . " Mail: $to_mail\nMessage could not be sent. Error: " . $mail->ErrorInfo, $log_path);
         }
     }
 }

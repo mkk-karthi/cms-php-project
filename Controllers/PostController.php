@@ -1,5 +1,6 @@
 <?php
 require_once "../Models/Posts.php";
+require_once "../Models/Users.php";
 
 class PostController
 {
@@ -88,9 +89,32 @@ class PostController
             ];
             $create = Posts::create($input);
 
-            if ($create)
+            if ($create) {
+
+                // send notifications
+                $users = Users::get([["role", "!=", 1], ["subscribe", "=", 1], ["status", "=", 1]]);
+
+                if (!is_null($users)) {
+                    foreach ($users as $user) {
+
+                        $name = $user["name"];
+                        $protocol = stripos($_SERVER['SERVER_PROTOCOL'], 'https') === 0 ? 'https://' : 'http://';
+                        $post_link = $protocol . $_SERVER["HTTP_HOST"] . "/post/" . $create;
+                        $app_name = APP_NAME;
+                        $post_title = $request["title"];
+
+                        $content = "Dear $name,<br> We hope you're doing well! We're excited to bring you the latest update from $app_name.<br><br><b>$post_title</b><br><br>Click below to read the full post:<br><a href='$post_link' target='_blank'>See more</a>";
+
+                        $mail_data = [
+                            "subject" => "New Post - " . APP_NAME,
+                            "content" => $content,
+                            "to" => $user["email"]
+                        ];
+                        Helper::notification($mail_data);
+                    }
+                }
                 $response = ["code" => 0, "message" => "Post created"];
-            else
+            } else
                 $response = ["code" => 1, "message" => "Post not created"];
         } catch (Exception $ex) {
 
@@ -188,16 +212,16 @@ class PostController
 
                 $old_image = $post["image"];
 
-                // create post
+                // update post
                 $input = [
                     "title" => $request["title"],
                     "content" => $request["content"],
                     "image" => $upload_file_path,
                     "updated_by" => $auth_user["id"]
                 ];
-                $create = Posts::update($input, [["id", "=", $id]]);
+                $update = Posts::update($input, [["id", "=", $id]]);
 
-                if ($create) {
+                if ($update) {
 
                     // delete old image
                     if ($old_image) {
