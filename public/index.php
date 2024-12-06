@@ -14,6 +14,10 @@ session_start();
 define('APP_PATH', str_replace("/public", "", $_SERVER['DOCUMENT_ROOT']));
 define('PUPLIC_PATH', $_SERVER['DOCUMENT_ROOT']);
 
+// get env variables
+$env = parse_ini_file('../.env');
+define('APP_NAME', $env["APP_NAME"]);
+
 // define routers
 $router = new Router();
 
@@ -22,8 +26,15 @@ $router->get('/', function () {
     exit;
 });
 
-$router->get('api/', function () {
-    echo "Welcome!";
+
+$router->get('api/mail', function () {
+    $mail_data = [
+        "subject" => "Here is the subject",
+        "content" => "This is the HTML message body <b>in bold!</b>",
+        "to" => "mkk2001vnr@gmail.com"
+    ];
+    Helper::notification($mail_data);
+    echo "sented!";
     exit;
 });
 

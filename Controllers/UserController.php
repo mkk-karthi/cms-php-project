@@ -110,6 +110,7 @@ class UserController
     public function approve()
     {
         $request = json_decode(file_get_contents('php://input'), true);
+        $response = [];
         $error_msg = "";
 
         // validate the inputs
@@ -128,7 +129,7 @@ class UserController
 
         // check user already approved or rejected
         $user = Users::first([["id", "=", $id]]);
-        if (!is_null($user)) {
+        if (!is_null($user) && $status == 3) {
 
             if ($user["status"] == 1 && $status == 2)
                 $response = ["code" => 0, "message" => "User already approved, can't be changed."];
@@ -137,7 +138,8 @@ class UserController
             else if ($user["status"] == $status)
                 $response = ["code" => 0, "message" => $status == 1 ? "User already approved" : "User already rejected"];
 
-            Helper::jsonResponse($response);
+            if (count($response))
+                Helper::jsonResponse($response);
         }
 
         // update the user
@@ -145,9 +147,20 @@ class UserController
 
             $update = Users::update(["status" => $status], [["id", "=", $id]]);
 
-            if ($update)
+            if ($update) {
+                $name = $user["name"];
+                $protocol = stripos($_SERVER['SERVER_PROTOCOL'], 'https') === 0 ? 'https://' : 'http://';
+                $link = $protocol . $_SERVER["HTTP_HOST"];
+
+                $mail_data = [
+                    "subject" => "Your Submission Has Been Approved - " . APP_NAME,
+                    "content" => "Hi $name,<br> Your submission has been approved by admin. <a href='$link' target='_blank'>Login</a> to enjoy the feeds. ",
+                    "to" => $user["email"]
+                ];
+                Helper::notification($mail_data);
+
                 $response = ["code" => 0, "message" => $status == 1 ? "User approved" : "User rejected"];
-            else
+            } else
                 $response = ["code" => 1, "message" => "User not updated"];
         } catch (Exception $ex) {
             $response = ["code" => 1, "message" => $ex->getMessage()];
