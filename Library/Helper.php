@@ -22,7 +22,7 @@ class Helper
         foreach ($where as $row) {
             $column = $row[0];
             $condition = $row[1];
-            $value = $row[2];
+            $value = DATABASE->real_escape_string($row[2]);
             $where_arr[] = "$column $condition '$value'";
         }
         $where_data = implode(" AND ", $where_arr);

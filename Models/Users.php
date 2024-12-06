@@ -47,7 +47,7 @@ class Users
         // generate insert sql
         foreach ($data as $key => $value) {
             $columns_arr[] = $key;
-            $values_arr[] = "'$value'";
+            $values_arr[] = "'" . DATABASE->real_escape_string($value)  . "'";
         }
 
         $columns = join(", ", $columns_arr);
@@ -89,7 +89,7 @@ class Users
 
         $set_data_arr = [];
         foreach ($data as $key => $value) {
-            $set_data_arr[] = "$key='$value'";
+            $set_data_arr[] = "$key='" . DATABASE->real_escape_string($value) . "'";
         }
         $set_data = implode(", ", $set_data_arr);
 
