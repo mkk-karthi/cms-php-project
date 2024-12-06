@@ -32,6 +32,9 @@ $router->post('/api/user/delete/{id}', [new UserController(), "delete"]);
 $router->post('/api/user/approve', [new UserController(), "approve"]);
 
 
+$router->post('/api/login', [new UserController(), "login"]);
+$router->post('/api/logout', [new UserController(), "logout"]);
+
 $router->get('api/posts', function () {
     echo "posts!";
     exit;

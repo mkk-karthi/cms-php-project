@@ -155,4 +155,77 @@ class UserController
 
         Helper::jsonResponse($response);
     }
+
+    public function login()
+    {
+        $request = json_decode(file_get_contents('php://input'), true);
+        $error_msg = "";
+
+        // validate the inputs
+        $email_pattern = '/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/';
+        if (!isset($request["email"]) || !$request["email"]) $error_msg = "Email is required";
+        else if (!preg_match($email_pattern, $request["email"])) $error_msg = "Email is invalid";
+        else if (!isset($request["password"]) || !$request["password"]) $error_msg = "Password is required";
+
+        // validation message
+        if ($error_msg) {
+            $response = ["code" => 1, "message" => $error_msg];
+            Helper::jsonResponse($response);
+        }
+
+        try {
+            $email = $request["email"];
+            $password = $request["password"];
+
+            // check the user email
+            $user = Users::query("email = '$email'");
+            if (is_null($user)) {
+                $error_msg = "Email & password incorrect";
+            } else {
+                $user = $user[0];
+
+                // verify the password
+                if (password_verify($password, $user["password"])) {
+
+                    // set the user datas in sessions
+                    $user_data = [
+                        "name" => $user["name"],
+                        "email" => $user["email"],
+                        "subscribe" => $user["subscribe"],
+                        "message" => $user["message"],
+                        "role" => $user["role"],
+                        "status" => $user["status"],
+                    ];
+                    $_SESSION["auth"] = true;
+                    $_SESSION["user"] = $user_data;
+                    $_SESSION["is_admin"] = $user["role"] == 1;
+
+                    $response = ["code" => 0, "data" => $user_data, "message" => "Login success"];
+                } else {
+                    $error_msg = "Email & password incorrect";
+                }
+            }
+        } catch (Exception $ex) {
+            $response = ["code" => 1, "message" => $ex->getMessage()];
+        }
+        if ($error_msg) {
+            $response = ["code" => 1, "message" => $error_msg];
+        }
+        Helper::jsonResponse($response);
+    }
+
+    public function logout()
+    {
+        if ($_SESSION["auth"]) {
+
+            // clear the all sessions
+            $_SESSION["auth"] = false;
+            $_SESSION["user"] = null;
+            $_SESSION["is_admin"] = false;
+            $response = ["code" => 0, "message" => "Logout success"];
+        } else {
+            $response = ["code" => 0, "message" => "Already logged out"];
+        }
+        Helper::jsonResponse($response);
+    }
 }
