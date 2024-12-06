@@ -33,10 +33,21 @@ class Router
                     array_shift($matches);  // remove first element
 
                     // call to the target action
-                    call_user_func_array($target, $matches);
+                    if (gettype($target) == "array") {
+
+                        // check it's callback
+                        if (is_callable([$target[0], $target[1]])) {
+                            call_user_func_array([$target[0], $target[1]], $matches);
+                        }
+                    } else {
+                        // check it's callback
+                        if (is_callable($target)) {
+                            call_user_func_array($target, $matches);
+                        }
+                    }
                 }
             }
         }
-        throw new Exception('Route not found');
+        Helper::jsonResponse(["code" => 404, "message" => "Route not found"], 400);
     }
 }

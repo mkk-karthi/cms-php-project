@@ -3,6 +3,10 @@ ini_set('display_errors', '1');
 
 require_once "../config/database.php";
 require_once "../Library/Router.php";
+require_once "../Library/Helper.php";
+
+
+require_once "../Controllers/UserController.php";
 
 session_start();
 
@@ -19,12 +23,16 @@ $router->get('api/', function () {
     exit;
 });
 
-$router->get('/api/users', function () {
-    echo "users";
-    exit;
-});
+// user routes
+$router->post('/api/users', [new UserController(), "list"]);
+$router->post('/api/user/create', [new UserController(), "create"]);
+$router->get('/api/user/view/{id}', [new UserController(), "view"]);
+$router->post('/api/user/update/{id}', [new UserController(), "update"]);
+$router->post('/api/user/delete/{id}', [new UserController(), "delete"]);
+$router->post('/api/user/approve', [new UserController(), "approve"]);
 
-$router->get('/posts', function () {
+
+$router->get('api/posts', function () {
     echo "posts!";
     exit;
 });
