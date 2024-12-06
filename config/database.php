@@ -3,15 +3,10 @@
 // get env variables
 $env = parse_ini_file('../.env');
 
-define('DB_SERVER', $env["DB_SERVER"]);
-define('DB_USERNAME', $env["DB_USERNAME"]);
-define('DB_PASSWORD', $env["DB_PASSWORD"]);
-define('DB_NAME', $env["DB_NAME"]);
-
 // database connection
-$conn = mysqli_connect(DB_SERVER, DB_USERNAME, DB_PASSWORD, DB_NAME);
+$conn = mysqli_connect($env["DB_SERVER"], $env["DB_USERNAME"], $env["DB_PASSWORD"], $env["DB_NAME"]);
 
-if($conn === false){
+if ($conn === false) {
     die("ERROR: Could not connect. " . mysqli_connect_error());
 }
 define('DATABASE', $conn);
