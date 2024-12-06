@@ -24,16 +24,16 @@ $router->get('api/', function () {
 });
 
 // user routes
-$router->post('/api/users', [new UserController(), "list"]);
+$router->post('/api/users', [new UserController(), "list"], ["auth:admin"]);
 $router->post('/api/user/create', [new UserController(), "create"]);
-$router->get('/api/user/view/{id}', [new UserController(), "view"]);
+$router->get('/api/user/view/{id}', [new UserController(), "view"], ["auth:admin"]);
 $router->post('/api/user/update/{id}', [new UserController(), "update"]);
-$router->post('/api/user/delete/{id}', [new UserController(), "delete"]);
-$router->post('/api/user/approve', [new UserController(), "approve"]);
+$router->post('/api/user/delete/{id}', [new UserController(), "delete"], ["auth:admin"]);
+$router->post('/api/user/approve', [new UserController(), "approve"], ["auth:admin"]);
 
 
 $router->post('/api/login', [new UserController(), "login"]);
-$router->post('/api/logout', [new UserController(), "logout"]);
+$router->post('/api/logout', [new UserController(), "logout"], ["auth"]);
 
 $router->get('api/posts', function () {
     echo "posts!";

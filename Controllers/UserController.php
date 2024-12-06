@@ -189,6 +189,7 @@ class UserController
 
                     // set the user datas in sessions
                     $user_data = [
+                        "id" => $user["id"],
                         "name" => $user["name"],
                         "email" => $user["email"],
                         "subscribe" => $user["subscribe"],

@@ -22,4 +22,18 @@ class Helper
 
         return $where_data;
     }
+
+    public static function middleware($type)
+    {
+
+        if ($type == "auth") {
+            if (!isset($_SESSION["auth"]) || !$_SESSION["auth"]) {
+                self::jsonResponse(["code" => 401, "message" => "Unauthorized"], 401);
+            }
+        } else if ($type == "auth:admin") {
+            if (!isset($_SESSION["auth"]) || !$_SESSION["auth"] || !isset($_SESSION["is_admin"]) || !$_SESSION["is_admin"]) {
+                self::jsonResponse(["code" => 401, "message" => "Unauthorized"], 401);
+            }
+        }
+    }
 }
