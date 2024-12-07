@@ -1,0 +1,21 @@
+body {
+    color: #000;
+    background-color: #f3f2f2;
+}
+.vh-50 {
+    height: 50vh;
+}
+
+@media (min-width: 768px) {
+    .vh-md-90 {
+        height: 90vh;
+    }
+}
+
+.text-hidden-2 {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+}

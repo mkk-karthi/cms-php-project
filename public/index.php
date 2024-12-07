@@ -26,6 +26,18 @@ $router->get('/', function () {
     include "../Views/index.html";
     exit;
 });
+$router->get('/admin', function () {
+    include "../Views/admin/index.html";
+    exit;
+});
+$router->get('/admin/users', function () {
+    include "../Views/admin/users.html";
+    exit;
+});
+$router->get('/admin/posts', function () {
+    include "../Views/admin/posts.html";
+    exit;
+});
 
 // auth routes
 $router->post('/api/login', [new UserController(), "login"]);
@@ -46,7 +58,7 @@ $router->post('/api/post/update/{id}', [new PostController(), "update"], ["auth:
 $router->post('/api/post/delete/{id}', [new PostController(), "delete"], ["auth:admin"]);
 
 // widget routes
-$router->post('/api/widgets', [new WidgetController(), "list"], ["auth"]);
+$router->post('/api/widgets', [new WidgetController(), "list"]);
 $router->post('/api/widget/create', [new WidgetController(), "create"], ["auth:admin"]);
 $router->get('/api/widget/view/{id}', [new WidgetController(), "view"], ["auth"]);
 $router->post('/api/widget/update/{id}', [new WidgetController(), "update"], ["auth:admin"]);
