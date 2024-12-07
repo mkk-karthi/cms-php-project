@@ -5,10 +5,19 @@ require_once "../config/database.php";
 require_once "../Library/Router.php";
 require_once "../Library/Helper.php";
 
-
 require_once "../Controllers/UserController.php";
+require_once "../Controllers/PostController.php";
+require_once "../Controllers/WidgetController.php";
 
+// start the session
 session_start();
+
+define('APP_PATH', realpath(__DIR__ . '/..'));
+define('PUPLIC_PATH', __DIR__);
+
+// get env variables
+$env = parse_ini_file('../.env');
+define('APP_NAME', $env["APP_NAME"]);
 
 // define routers
 $router = new Router();
@@ -18,30 +27,29 @@ $router->get('/', function () {
     exit;
 });
 
-$router->get('api/', function () {
-    echo "Welcome!";
-    exit;
-});
+// auth routes
+$router->post('/api/login', [new UserController(), "login"]);
+$router->post('/api/logout', [new UserController(), "logout"], ["auth"]);
 
 // user routes
 $router->post('/api/users', [new UserController(), "list"], ["auth:admin"]);
 $router->post('/api/user/create', [new UserController(), "create"]);
 $router->get('/api/user/view/{id}', [new UserController(), "view"], ["auth:admin"]);
-$router->post('/api/user/update/{id}', [new UserController(), "update"]);
 $router->post('/api/user/delete/{id}', [new UserController(), "delete"], ["auth:admin"]);
 $router->post('/api/user/approve', [new UserController(), "approve"], ["auth:admin"]);
 
+// post routes
+$router->post('/api/posts', [new PostController(), "list"], ["auth"]);
+$router->post('/api/post/create', [new PostController(), "create"], ["auth:admin"]);
+$router->get('/api/post/view/{id}', [new PostController(), "view"], ["auth"]);
+$router->post('/api/post/update/{id}', [new PostController(), "update"], ["auth:admin"]);
+$router->post('/api/post/delete/{id}', [new PostController(), "delete"], ["auth:admin"]);
 
-$router->post('/api/login', [new UserController(), "login"]);
-$router->post('/api/logout', [new UserController(), "logout"], ["auth"]);
-
-$router->get('api/posts', function () {
-    echo "posts!";
-    exit;
-});
-$router->get('/post/{id}', function ($id) {
-    echo "post-" . $id;
-    exit;
-});
+// widget routes
+$router->post('/api/widgets', [new WidgetController(), "list"], ["auth"]);
+$router->post('/api/widget/create', [new WidgetController(), "create"], ["auth:admin"]);
+$router->get('/api/widget/view/{id}', [new WidgetController(), "view"], ["auth"]);
+$router->post('/api/widget/update/{id}', [new WidgetController(), "update"], ["auth:admin"]);
+$router->post('/api/widget/delete/{id}', [new WidgetController(), "delete"], ["auth:admin"]);
 
 $router->match();

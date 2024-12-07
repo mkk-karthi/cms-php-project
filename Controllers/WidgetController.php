@@ -1,21 +1,20 @@
 <?php
-require_once "../Models/Posts.php";
-require_once "../Models/Users.php";
+require_once "../Models/Widget.php";
 
-class PostController
+class WidgetController
 {
 
     public function list()
     {
         $request = json_decode(file_get_contents('php://input'), true);
 
-        // get pagination details
-        $page = isset($request["page"]) ? $request["page"] : 1;
-        $limit = isset($request["page"]) ? $request["limit"] : 0;
-        $order_by = isset($request["sort_by"]) ? $request["sort_by"] : [];
+        // generate where
+        $where = [];
+        if (isset($request["type"]) && $request["type"]) $where[] = ["widget_type", "=", $request["type"]];
+        if (isset($request["id"]) && $request["id"]) $where[] = ["id", "=", $request["id"]];
 
-        // get posts
-        $data = Posts::get([], $order_by, $page, $limit);
+        // get widgets
+        $data = Widget::get($where);
         $response = [
             "code" => is_null($data) ? 1 : 0,
             "data" => $data,
@@ -31,18 +30,36 @@ class PostController
         if (!$request) $request = json_decode(file_get_contents('php://input'), true);
 
         $error_msg = "";
+        $type = "";
 
         // validate the inputs
-        if (!isset($request["title"]) || !$request["title"]) $error_msg = "Title is required";
-        else if (!strlen($request["title"]) > 120) $error_msg = "Title may not be greater than 120 characters";
-        else if (!isset($request["content"]) || !$request["content"]) $error_msg = "Content is required";
-        else if (!strlen($request["content"]) > 1500) $error_msg = "Content may not be greater than 1500 characters";
+        if (!isset($request["type"]) || !$request["type"]) $error_msg = "Type is required";
+        else if (!in_array($request["type"], [1, 2, 3])) $error_msg = "Type field must be 1,2,3";
+        else $type = $request["type"];
+
+        if ($type == 1) {   // slider
+
+            if (!isset($_FILES["image"]) || !$_FILES["image"]) $error_msg = "Image is required";
+        } else if ($type == 2) {   // testimonials
+
+            if (!isset($request["name"]) || !$request["name"]) $error_msg = "Name is required";
+            else if (!strlen($request["name"]) > 50) $error_msg = "Name may not be greater than 50 characters";
+            else if (!isset($request["description"]) || !$request["description"]) $error_msg = "Description is required";
+            else if (!strlen($request["description"]) > 250) $error_msg = "Description may not be greater than 250 characters";
+            else if (!isset($_FILES["image"]) || !$_FILES["image"]) $error_msg = "Image is required";
+        } else if ($type == 3) {   // about
+
+            if (!isset($request["title"]) || !$request["title"]) $error_msg = "Title is required";
+            else if (!strlen($request["title"]) > 120) $error_msg = "Title may not be greater than 120 characters";
+            else if (!isset($request["content"]) || !$request["content"]) $error_msg = "Content is required";
+            else if (!strlen($request["content"]) > 1500) $error_msg = "Content may not be greater than 1500 characters";
+        }
 
         try {
             // check and upload image file
             $upload_file_path = "";
 
-            if (isset($_FILES["image"])) {
+            if (isset($_FILES["image"]) && ($type == 1 || $type == 2)) {
                 $img_file = $_FILES["image"];
 
                 // get file details
@@ -64,7 +81,7 @@ class PostController
                 if (!$error_msg) {
 
                     // upload file
-                    $target_dir = "/uploads/posts/";
+                    $target_dir = "/uploads/widgets/";
                     $file_name = time() . "-" . basename($img_file["name"]);
 
                     if (move_uploaded_file($img_file["tmp_name"], PUPLIC_PATH . $target_dir . $file_name)) {
@@ -81,45 +98,29 @@ class PostController
                 Helper::jsonResponse($response);
             }
 
-            // get auth user
-            $auth_user = $_SESSION["user"];
+            // create widget
+            if ($type == 1) {   // slider
+                $input = [
+                    "image" => $upload_file_path
+                ];
+            } else if ($type == 2) {   // testimonials
+                $input = [
+                    "name" => $request["name"],
+                    "description" => $request["description"],
+                    "image" => $upload_file_path
+                ];
+            } else if ($type == 3) {   // about
+                $input = [
+                    "title" => $request["title"],
+                    "content" => $request["content"]
+                ];
+            }
+            $create = Widget::create($type, $input);
 
-            // create post
-            $input = [
-                "title" => $request["title"],
-                "content" => $request["content"],
-                "image" => $upload_file_path,
-                "created_by" => $auth_user["id"]
-            ];
-            $create = Posts::create($input);
-
-            if ($create) {
-
-                // send notifications
-                $users = Users::get([["role", "!=", 1], ["subscribe", "=", 1], ["status", "=", 1]]);
-
-                if (!is_null($users)) {
-                    foreach ($users as $user) {
-
-                        $name = $user["name"];
-                        $protocol = stripos($_SERVER['SERVER_PROTOCOL'], 'https') === 0 ? 'https://' : 'http://';
-                        $post_link = $protocol . $_SERVER["HTTP_HOST"] . "/posts";
-                        $app_name = APP_NAME;
-                        $post_title = $request["title"];
-
-                        $content = "Dear $name,<br> We hope you're doing well! We're excited to bring you the latest update from $app_name.<br><br><b>$post_title</b><br><br>Click below to read the full post:<br><a href='$post_link' target='_blank'>See more</a>";
-
-                        $mail_data = [
-                            "subject" => "New Post - " . APP_NAME,
-                            "content" => $content,
-                            "to" => $user["email"]
-                        ];
-                        Helper::notification($mail_data);
-                    }
-                }
-                $response = ["code" => 0, "message" => "Post created"];
-            } else
-                $response = ["code" => 1, "message" => "Post not created"];
+            if ($create)
+                $response = ["code" => 0, "message" => "Widget created"];
+            else
+                $response = ["code" => 1, "message" => "Widget not created"];
         } catch (Exception $ex) {
 
             // delete uploaded image
@@ -137,9 +138,9 @@ class PostController
 
     public function view($id)
     {
-        // get post by id
+        // get widget by id
         try {
-            $data = Posts::first([["id", "=", $id]]);
+            $data = Widget::first([["id", "=", $id]]);
             $response = [
                 "code" => is_null($data) ? 1 : 0,
                 "data" => $data,
@@ -161,16 +162,33 @@ class PostController
         $old_image = "";
 
         // validate the inputs
-        if (!isset($request["title"]) || !$request["title"]) $error_msg = "Title is required";
-        else if (!strlen($request["title"]) > 120) $error_msg = "Title may not be greater than 120 characters";
-        else if (!isset($request["content"]) || !$request["content"]) $error_msg = "Content is required";
-        else if (!strlen($request["content"]) > 1500) $error_msg = "Content may not be greater than 1500 characters";
+        if (!isset($request["type"]) || !$request["type"]) $error_msg = "Type is required";
+        else if (!in_array($request["type"], [1, 2, 3])) $error_msg = "Type field must be 1,2,3";
+        else $type = $request["type"];
+
+        if ($type == 1) {   // slider
+
+            if (!isset($_FILES["image"]) || !$_FILES["image"]) $error_msg = "Image is required";
+        } else if ($type == 2) {   // testimonials
+
+            if (!isset($request["name"]) || !$request["name"]) $error_msg = "Name is required";
+            else if (!strlen($request["name"]) > 50) $error_msg = "Name may not be greater than 50 characters";
+            else if (!isset($request["description"]) || !$request["description"]) $error_msg = "Description is required";
+            else if (!strlen($request["description"]) > 250) $error_msg = "Description may not be greater than 250 characters";
+            else if (!isset($_FILES["image"]) || !$_FILES["image"]) $error_msg = "Image is required";
+        } else if ($type == 3) {   // about
+
+            if (!isset($request["title"]) || !$request["title"]) $error_msg = "Title is required";
+            else if (!strlen($request["title"]) > 120) $error_msg = "Title may not be greater than 120 characters";
+            else if (!isset($request["content"]) || !$request["content"]) $error_msg = "Content is required";
+            else if (!strlen($request["content"]) > 1500) $error_msg = "Content may not be greater than 1500 characters";
+        }
 
         try {
             // check and upload image file
             $upload_file_path = "";
 
-            if (isset($_FILES["image"])) {
+            if (isset($_FILES["image"]) && ($type == 1 || $type == 2)) {
                 $img_file = $_FILES["image"];
 
                 // get file details
@@ -192,7 +210,7 @@ class PostController
                 if (!$error_msg) {
 
                     // upload file
-                    $target_dir = "/uploads/posts/";
+                    $target_dir = "/uploads/widgets/";
                     $file_name = time() . "-" . basename($img_file["name"]);
 
                     if (move_uploaded_file($img_file["tmp_name"], PUPLIC_PATH . $target_dir . $file_name)) {
@@ -209,25 +227,33 @@ class PostController
                 Helper::jsonResponse($response);
             }
 
-            // get auth user
-            $auth_user = $_SESSION["user"];
+            $widget = Widget::first([["id", "=", $id]]);
 
-            $post = Posts::first([["id", "=", $id]]);
-
-            if (is_null($post)) {
-                $response = ["code" => 1, "message" => "Post not found"];
+            if (is_null($widget)) {
+                $response = ["code" => 1, "message" => "Widget not found"];
             } else {
 
-                $old_image = $post["image"];
+                $old_image = $widget["image"];
 
-                // update post
-                $input = [
-                    "title" => $request["title"],
-                    "content" => $request["content"],
-                    "image" => $upload_file_path,
-                    "updated_by" => $auth_user["id"]
-                ];
-                $update = Posts::update($input, [["id", "=", $id]]);
+                // update widget
+                if ($type == 1) {   // slider
+                    $input = [
+                        "image" => $upload_file_path
+                    ];
+                } else if ($type == 2) {   // testimonials
+                    $input = [
+                        "name" => $request["name"],
+                        "description" => $request["description"],
+                        "image" => $upload_file_path
+                    ];
+                } else if ($type == 3) {   // about
+                    $input = [
+                        "title" => $request["title"],
+                        "content" => $request["content"]
+                    ];
+                }
+
+                $update = Widget::update($input, $id);
 
                 if ($update) {
 
@@ -239,9 +265,9 @@ class PostController
                         }
                     }
 
-                    $response = ["code" => 0, "message" => "Post updated"];
+                    $response = ["code" => 0, "message" => "Widget updated"];
                 } else
-                    $response = ["code" => 1, "message" => "Post not updated"];
+                    $response = ["code" => 1, "message" => "Widget not updated"];
             }
         } catch (Exception $ex) {
 
@@ -262,15 +288,16 @@ class PostController
     {
         try {
 
-            $post = Posts::first([["id", "=", $id]]);
+            $widget = Widget::first([["id", "=", $id]]);
 
-            if (is_null($post)) {
-                $response = ["code" => 1, "message" => "Post not found"];
+            if (is_null($widget)) {
+                $response = ["code" => 1, "message" => "Widget not found"];
             } else {
 
-                $old_image = $post["image"];
-                // delete the post by id
-                $delete = Posts::delete([["id", "=", $id]]);
+                $old_image = $widget["image"];
+
+                // delete the widget by id
+                $delete = Widget::delete($id);
 
                 if ($delete) {
                     // delete old image
@@ -281,9 +308,9 @@ class PostController
                         }
                     }
 
-                    $response = ["code" => 0, "message" => "Post deleted"];
+                    $response = ["code" => 0, "message" => "Widget deleted"];
                 } else
-                    $response = ["code" => 1, "message" => "Post not deleted"];
+                    $response = ["code" => 1, "message" => "Widget not deleted"];
             }
         } catch (Exception $ex) {
             $response = ["code" => 1, "message" => $ex->getMessage()];
