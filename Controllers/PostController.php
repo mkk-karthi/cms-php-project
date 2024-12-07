@@ -16,7 +16,11 @@ class PostController
 
         // get posts
         $data = Posts::get([], $order_by, $page, $limit);
-        $response = ["code" => 0, "data" => $data];
+        $response = [
+            "code" => is_null($data) ? 1 : 0,
+            "data" => $data,
+            "message" => is_null($data) ? "Data not found" : "Data found"
+        ];
 
         Helper::jsonResponse($response);
     }
@@ -136,7 +140,11 @@ class PostController
         // get post by id
         try {
             $data = Posts::first([["id", "=", $id]]);
-            $response = ["code" => 0, "data" => $data];
+            $response = [
+                "code" => is_null($data) ? 1 : 0,
+                "data" => $data,
+                "message" => is_null($data) ? "Data not found" : "Data found"
+            ];
         } catch (Exception $ex) {
             $response = ["code" => 1, "message" => $ex->getMessage()];
         }

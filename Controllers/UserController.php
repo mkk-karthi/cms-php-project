@@ -15,7 +15,11 @@ class UserController
 
         // get users
         $data = Users::get([["role", "!=", 1]], $order_by, $page, $limit);
-        $response = ["code" => 0, "data" => $data];
+        $response = [
+            "code" => is_null($data) ? 1 : 0,
+            "data" => $data,
+            "message" => is_null($data) ? "Data not found" : "Data found"
+        ];
 
         Helper::jsonResponse($response);
     }
@@ -80,7 +84,11 @@ class UserController
         // get user by id
         try {
             $data = Users::first([["id", "=", $id]]);
-            $response = ["code" => 0, "data" => $data];
+            $response = [
+                "code" => is_null($data) ? 1 : 0,
+                "data" => $data,
+                "message" => is_null($data) ? "Data not found" : "Data found"
+            ];
         } catch (Exception $ex) {
             $response = ["code" => 1, "message" => $ex->getMessage()];
         }
