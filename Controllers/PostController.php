@@ -60,7 +60,7 @@ class PostController
                 if (!$error_msg) {
 
                     // upload file
-                    $target_dir = "/uploads/";
+                    $target_dir = "/uploads/posts/";
                     $file_name = time() . "-" . basename($img_file["name"]);
 
                     if (move_uploaded_file($img_file["tmp_name"], PUPLIC_PATH . $target_dir . $file_name)) {
@@ -99,7 +99,7 @@ class PostController
 
                         $name = $user["name"];
                         $protocol = stripos($_SERVER['SERVER_PROTOCOL'], 'https') === 0 ? 'https://' : 'http://';
-                        $post_link = $protocol . $_SERVER["HTTP_HOST"] . "/post/" . $create;
+                        $post_link = $protocol . $_SERVER["HTTP_HOST"] . "/posts";
                         $app_name = APP_NAME;
                         $post_title = $request["title"];
 
@@ -184,7 +184,7 @@ class PostController
                 if (!$error_msg) {
 
                     // upload file
-                    $target_dir = "/uploads/";
+                    $target_dir = "/uploads/posts/";
                     $file_name = time() . "-" . basename($img_file["name"]);
 
                     if (move_uploaded_file($img_file["tmp_name"], PUPLIC_PATH . $target_dir . $file_name)) {
