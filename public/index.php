@@ -7,12 +7,13 @@ require_once "../Library/Helper.php";
 
 require_once "../Controllers/UserController.php";
 require_once "../Controllers/PostController.php";
+require_once "../Controllers/WidgetController.php";
 
 // start the session
 session_start();
 
-define('APP_PATH', str_replace("/public", "", $_SERVER['DOCUMENT_ROOT']));
-define('PUPLIC_PATH', $_SERVER['DOCUMENT_ROOT']);
+define('APP_PATH', realpath(__DIR__ . '/..'));
+define('PUPLIC_PATH', __DIR__);
 
 // get env variables
 $env = parse_ini_file('../.env');
@@ -26,18 +27,6 @@ $router->get('/', function () {
     exit;
 });
 
-
-$router->get('api/mail', function () {
-    $mail_data = [
-        "subject" => "Here is the subject",
-        "content" => "This is the HTML message body <b>in bold!</b>",
-        "to" => "mkk2001vnr@gmail.com"
-    ];
-    Helper::notification($mail_data);
-    echo "sented!";
-    exit;
-});
-
 // auth routes
 $router->post('/api/login', [new UserController(), "login"]);
 $router->post('/api/logout', [new UserController(), "logout"], ["auth"]);
@@ -46,15 +35,21 @@ $router->post('/api/logout', [new UserController(), "logout"], ["auth"]);
 $router->post('/api/users', [new UserController(), "list"], ["auth:admin"]);
 $router->post('/api/user/create', [new UserController(), "create"]);
 $router->get('/api/user/view/{id}', [new UserController(), "view"], ["auth:admin"]);
-$router->post('/api/user/update/{id}', [new UserController(), "update"]);
 $router->post('/api/user/delete/{id}', [new UserController(), "delete"], ["auth:admin"]);
 $router->post('/api/user/approve', [new UserController(), "approve"], ["auth:admin"]);
 
-// user routes
-$router->post('/api/posts', [new PostController(), "list"], ["auth:admin"]);
-$router->post('/api/post/create', [new PostController(), "create"]);
-$router->get('/api/post/view/{id}', [new PostController(), "view"], ["auth:admin"]);
-$router->post('/api/post/update/{id}', [new PostController(), "update"]);
+// post routes
+$router->post('/api/posts', [new PostController(), "list"], ["auth"]);
+$router->post('/api/post/create', [new PostController(), "create"], ["auth:admin"]);
+$router->get('/api/post/view/{id}', [new PostController(), "view"], ["auth"]);
+$router->post('/api/post/update/{id}', [new PostController(), "update"], ["auth:admin"]);
 $router->post('/api/post/delete/{id}', [new PostController(), "delete"], ["auth:admin"]);
+
+// widget routes
+$router->post('/api/widgets', [new WidgetController(), "list"], ["auth"]);
+$router->post('/api/widget/create', [new WidgetController(), "create"], ["auth:admin"]);
+$router->get('/api/widget/view/{id}', [new WidgetController(), "view"], ["auth"]);
+$router->post('/api/widget/update/{id}', [new WidgetController(), "update"], ["auth:admin"]);
+$router->post('/api/widget/delete/{id}', [new WidgetController(), "delete"], ["auth:admin"]);
 
 $router->match();
