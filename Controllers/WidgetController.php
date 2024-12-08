@@ -49,17 +49,16 @@ class WidgetController
             else if (!isset($_FILES["image"]) || !$_FILES["image"]) $error_msg = "Image is required";
         } else if ($type == 3) {   // about
 
-            if (!isset($request["title"]) || !$request["title"]) $error_msg = "Title is required";
-            else if (!strlen($request["title"]) > 120) $error_msg = "Title may not be greater than 120 characters";
+            if (!isset($_FILES["image"]) || !$_FILES["image"]) $error_msg = "Image is required";
             else if (!isset($request["content"]) || !$request["content"]) $error_msg = "Content is required";
-            else if (!strlen($request["content"]) > 1500) $error_msg = "Content may not be greater than 1500 characters";
+            else if (!strlen($request["content"]) > 500) $error_msg = "Content may not be greater than 500 characters";
         }
 
         try {
             // check and upload image file
             $upload_file_path = "";
 
-            if (isset($_FILES["image"]) && ($type == 1 || $type == 2)) {
+            if (isset($_FILES["image"])) {
                 $img_file = $_FILES["image"];
 
                 // get file details
@@ -111,7 +110,7 @@ class WidgetController
                 ];
             } else if ($type == 3) {   // about
                 $input = [
-                    "title" => $request["title"],
+                    "image" => $upload_file_path,
                     "content" => $request["content"]
                 ];
             }
@@ -175,12 +174,9 @@ class WidgetController
             else if (!strlen($request["name"]) > 50) $error_msg = "Name may not be greater than 50 characters";
             else if (!isset($request["description"]) || !$request["description"]) $error_msg = "Description is required";
             else if (!strlen($request["description"]) > 250) $error_msg = "Description may not be greater than 250 characters";
-            else if (!isset($_FILES["image"]) || !$_FILES["image"]) $error_msg = "Image is required";
         } else if ($type == 3) {   // about
 
-            if (!isset($request["title"]) || !$request["title"]) $error_msg = "Title is required";
-            else if (!strlen($request["title"]) > 120) $error_msg = "Title may not be greater than 120 characters";
-            else if (!isset($request["content"]) || !$request["content"]) $error_msg = "Content is required";
+            if (!isset($request["content"]) || !$request["content"]) $error_msg = "Content is required";
             else if (!strlen($request["content"]) > 1500) $error_msg = "Content may not be greater than 1500 characters";
         }
 
@@ -188,7 +184,7 @@ class WidgetController
             // check and upload image file
             $upload_file_path = "";
 
-            if (isset($_FILES["image"]) && ($type == 1 || $type == 2)) {
+            if (isset($_FILES["image"])) {
                 $img_file = $_FILES["image"];
 
                 // get file details
@@ -237,20 +233,19 @@ class WidgetController
 
                 // update widget
                 if ($type == 1) {   // slider
-                    $input = [
-                        "image" => $upload_file_path
-                    ];
+                    $input = [];
                 } else if ($type == 2) {   // testimonials
                     $input = [
                         "name" => $request["name"],
-                        "description" => $request["description"],
-                        "image" => $upload_file_path
+                        "description" => $request["description"]
                     ];
                 } else if ($type == 3) {   // about
                     $input = [
-                        "title" => $request["title"],
                         "content" => $request["content"]
                     ];
+                }
+                if ($upload_file_path) {
+                    $input["image"] = $upload_file_path;
                 }
 
                 $update = Widget::update($input, $id);
@@ -258,7 +253,7 @@ class WidgetController
                 if ($update) {
 
                     // delete old image
-                    if ($old_image) {
+                    if ($old_image && $upload_file_path) {
                         $file_path = PUPLIC_PATH . $old_image;
                         if (file_exists($file_path)) {
                             unlink($file_path);

@@ -1,13 +1,4 @@
 <?php
-ini_set('display_errors', '1');
-
-require_once "../config/database.php";
-require_once "../Library/Router.php";
-require_once "../Library/Helper.php";
-
-require_once "../Controllers/UserController.php";
-require_once "../Controllers/PostController.php";
-require_once "../Controllers/WidgetController.php";
 
 // start the session
 session_start();
@@ -18,12 +9,51 @@ define('PUPLIC_PATH', __DIR__);
 // get env variables
 $env = parse_ini_file('../.env');
 define('APP_NAME', $env["APP_NAME"]);
+define('DEBUG', $env["DEBUG"]);
+define('NOTIFICATION', $env["NOTIFICATION"]);
+
+if (DEBUG)
+    ini_set('display_errors', '1');
+
+
+require_once "../config/database.php";
+require_once "../Library/Router.php";
+require_once "../Library/Helper.php";
+
+require_once "../Controllers/UserController.php";
+require_once "../Controllers/PostController.php";
+require_once "../Controllers/WidgetController.php";
 
 // define routers
 $router = new Router();
 
 $router->get('/', function () {
-    include "../Views/index.html";
+    include "../Views/index.php";
+    exit;
+});
+$router->get('/admin', function () {
+
+    $protocol = stripos($_SERVER['SERVER_PROTOCOL'], 'https') === 0 ? 'https://' : 'http://';
+
+    if ($_SESSION["auth"] && $_SESSION["is_admin"])
+        include "../Views/admin/index.php";
+    else header("Location: " . $protocol . $_SERVER["HTTP_HOST"]);
+    exit;
+});
+$router->get('/admin/users', function () {
+    $protocol = stripos($_SERVER['SERVER_PROTOCOL'], 'https') === 0 ? 'https://' : 'http://';
+
+    if ($_SESSION["auth"] && $_SESSION["is_admin"])
+        include "../Views/admin/users.php";
+    else header("Location: " . $protocol . $_SERVER["HTTP_HOST"]);
+    exit;
+});
+$router->get('/admin/posts', function () {
+    $protocol = stripos($_SERVER['SERVER_PROTOCOL'], 'https') === 0 ? 'https://' : 'http://';
+
+    if ($_SESSION["auth"] && $_SESSION["is_admin"])
+        include "../Views/admin/posts.php";
+    else header("Location: " . $protocol . $_SERVER["HTTP_HOST"]);
     exit;
 });
 
@@ -46,7 +76,7 @@ $router->post('/api/post/update/{id}', [new PostController(), "update"], ["auth:
 $router->post('/api/post/delete/{id}', [new PostController(), "delete"], ["auth:admin"]);
 
 // widget routes
-$router->post('/api/widgets', [new WidgetController(), "list"], ["auth"]);
+$router->post('/api/widgets', [new WidgetController(), "list"]);
 $router->post('/api/widget/create', [new WidgetController(), "create"], ["auth:admin"]);
 $router->get('/api/widget/view/{id}', [new WidgetController(), "view"], ["auth"]);
 $router->post('/api/widget/update/{id}', [new WidgetController(), "update"], ["auth:admin"]);

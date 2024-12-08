@@ -53,44 +53,47 @@ class Helper
 
     public static function notification($mail_data)
     {
-        $log_path = APP_PATH . "/storage/logs/" . date("Y-m-d") . "-email_log.txt";
+        // check notification
+        if (NOTIFICATION) {
+            $log_path = APP_PATH . "/storage/logs/" . date("Y-m-d") . "-email_log.txt";
 
-        $mail = new PHPMailer(true);
+            $mail = new PHPMailer(true);
 
-        try {
-            $to_mail = $mail_data["to"];
-            $subject = $mail_data["subject"];
-            $content = $mail_data["content"];
+            try {
+                $to_mail = $mail_data["to"];
+                $subject = $mail_data["subject"];
+                $content = $mail_data["content"];
 
-            // get env variables
-            $env = parse_ini_file('../.env');
+                // get env variables
+                $env = parse_ini_file('../.env');
 
-            // config mail
-            $mail->isSMTP();
-            $mail->Host = $env["MAIL_HOST"];
-            $mail->Port = $env["MAIL_PORT"];
-            $mail->SMTPAuth = true;
-            $mail->Username = $env["MAIL_USERNAME"];
-            $mail->Password = $env["MAIL_PASSWORD"];
-            $mail->SMTPSecure = $env["MAIL_ENCRYPTION"];
+                // config mail
+                $mail->isSMTP();
+                $mail->Host = $env["MAIL_HOST"];
+                $mail->Port = $env["MAIL_PORT"];
+                $mail->SMTPAuth = true;
+                $mail->Username = $env["MAIL_USERNAME"];
+                $mail->Password = $env["MAIL_PASSWORD"];
+                $mail->SMTPSecure = $env["MAIL_ENCRYPTION"];
 
-            // Recipients
-            $mail->setFrom($env["MAIL_FROM_ADDRESS"], $env["MAIL_FROM_NAME"]);
-            $mail->addAddress($to_mail);     //Add a recipient
+                // Recipients
+                $mail->setFrom($env["MAIL_FROM_ADDRESS"], $env["MAIL_FROM_NAME"]);
+                $mail->addAddress($to_mail);     //Add a recipient
 
-            // Content
-            $mail->isHTML(true);
-            $mail->Subject = $subject;
-            $mail->Body    = $content;
+                // Content
+                $mail->isHTML(true);
+                $mail->Subject = $subject;
+                $mail->Body    = $content;
 
-            // send the message
-            if (!$mail->send()) {
+                // send the message
+                if (!$mail->send()) {
+                    self::log("\n\n" . date("Y-m-d H:i:s") . " Mail: $to_mail\nMessage could not be sent. Error: " . $mail->ErrorInfo, $log_path);
+                } else {
+                    self::log("\n\n" . date("Y-m-d H:i:s") . " Mail: $to_mail\nMessage has been sent", $log_path);
+                }
+            } catch (Exception $e) {
                 self::log("\n\n" . date("Y-m-d H:i:s") . " Mail: $to_mail\nMessage could not be sent. Error: " . $mail->ErrorInfo, $log_path);
-            } else {
-                self::log("\n\n" . date("Y-m-d H:i:s") . " Mail: $to_mail\nMessage has been sent", $log_path);
             }
-        } catch (Exception $e) {
-            self::log("\n\n" . date("Y-m-d H:i:s") . " Mail: $to_mail\nMessage could not be sent. Error: " . $mail->ErrorInfo, $log_path);
         }
     }
 }

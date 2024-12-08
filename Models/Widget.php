@@ -22,7 +22,7 @@ class Widget
                 $id = $row["id"];
                 $widget = [
                     "id" => $id,
-                    "widget_type" => $row["widget_type"],
+                    "type" => $row["widget_type"],
                 ];
 
                 // get widget details
@@ -91,7 +91,7 @@ class Widget
                 $id = $row["id"];
                 $data = [
                     "id" => $id,
-                    "widget_type" => $row["widget_type"],
+                    "type" => $row["widget_type"],
                 ];
 
                 // get widget details
