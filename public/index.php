@@ -32,15 +32,28 @@ $router->get('/', function () {
     exit;
 });
 $router->get('/admin', function () {
-    include "../Views/admin/index.html";
+
+    $protocol = stripos($_SERVER['SERVER_PROTOCOL'], 'https') === 0 ? 'https://' : 'http://';
+
+    if ($_SESSION["auth"] && $_SESSION["is_admin"])
+        include "../Views/admin/index.php";
+    else header("Location: " . $protocol . $_SERVER["HTTP_HOST"]);
     exit;
 });
 $router->get('/admin/users', function () {
-    include "../Views/admin/users.html";
+    $protocol = stripos($_SERVER['SERVER_PROTOCOL'], 'https') === 0 ? 'https://' : 'http://';
+
+    if ($_SESSION["auth"] && $_SESSION["is_admin"])
+        include "../Views/admin/users.php";
+    else header("Location: " . $protocol . $_SERVER["HTTP_HOST"]);
     exit;
 });
 $router->get('/admin/posts', function () {
-    include "../Views/admin/posts.html";
+    $protocol = stripos($_SERVER['SERVER_PROTOCOL'], 'https') === 0 ? 'https://' : 'http://';
+
+    if ($_SESSION["auth"] && $_SESSION["is_admin"])
+        include "../Views/admin/posts.php";
+    else header("Location: " . $protocol . $_SERVER["HTTP_HOST"]);
     exit;
 });
 
