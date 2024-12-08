@@ -9,18 +9,30 @@ class PostController
     {
         $request = json_decode(file_get_contents('php://input'), true);
 
-        // get pagination details
-        $page = isset($request["page"]) ? $request["page"] : 1;
-        $limit = isset($request["page"]) ? $request["limit"] : 0;
-        $order_by = isset($request["sort_by"]) ? $request["sort_by"] : [];
+        // get auth user and check approved
+        $auth_user = $_SESSION["user"];
+        $user = Users::first([["id", "=", $auth_user["id"]], ["status", "=", 1]]);
 
-        // get posts
-        $data = Posts::get([], $order_by, $page, $limit);
-        $response = [
-            "code" => is_null($data) ? 1 : 0,
-            "data" => $data,
-            "message" => is_null($data) ? "Data not found" : "Data found"
-        ];
+        if (is_null($user)) {
+            $response = [
+                "code" => 1,
+                "message" => "Admin not approved"
+            ];
+        } else {
+
+            // get pagination details
+            $page = isset($request["page"]) ? $request["page"] : 1;
+            $limit = isset($request["page"]) ? $request["limit"] : 0;
+            $order_by = isset($request["sort_by"]) ? $request["sort_by"] : [];
+
+            // get posts
+            $data = Posts::get([], $order_by, $page, $limit);
+            $response = [
+                "code" => is_null($data) ? 1 : 0,
+                "data" => $data,
+                "message" => is_null($data) ? "Data not found" : "Data found"
+            ];
+        }
 
         Helper::jsonResponse($response);
     }
@@ -36,7 +48,7 @@ class PostController
         if (!isset($request["title"]) || !$request["title"]) $error_msg = "Title is required";
         else if (!strlen($request["title"]) > 120) $error_msg = "Title may not be greater than 120 characters";
         else if (!isset($request["content"]) || !$request["content"]) $error_msg = "Content is required";
-        else if (!strlen($request["content"]) > 1500) $error_msg = "Content may not be greater than 1500 characters";
+        else if (!strlen($request["content"]) > 500) $error_msg = "Content may not be greater than 500 characters";
 
         try {
             // check and upload image file
