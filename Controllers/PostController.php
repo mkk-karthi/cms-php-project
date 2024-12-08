@@ -236,15 +236,18 @@ class PostController
                 $input = [
                     "title" => $request["title"],
                     "content" => $request["content"],
-                    "image" => $upload_file_path,
                     "updated_by" => $auth_user["id"]
                 ];
+
+                if ($upload_file_path) {
+                    $input["image"] = $upload_file_path;
+                }
                 $update = Posts::update($input, [["id", "=", $id]]);
 
                 if ($update) {
 
                     // delete old image
-                    if ($old_image) {
+                    if ($old_image && $upload_file_path) {
                         $file_path = PUPLIC_PATH . $old_image;
                         if (file_exists($file_path)) {
                             unlink($file_path);
