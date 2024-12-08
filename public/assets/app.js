@@ -421,6 +421,7 @@ function appRun() {
             document.getElementById("contact-submit").addEventListener("click", (event) => {
 
                 event.preventDefault();
+                event.stopPropagation();
                 registerSubmit();
             })
 

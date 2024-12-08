@@ -396,10 +396,10 @@ function getWidgets() {
     AjaxPost(`${BaseURL}/api/widgets`)
         .then(res => JSON.parse(res))
         .then(async res => {
+            var sliderContent = "";
+            var testimonialsContent = "";
 
             if (res.code == 0 && res.data && res.data.length > 0) {
-                var sliderContent = "";
-                var testimonialsContent = "";
 
                 for await (const item of res.data) {
                     if (item.type == 1) {
@@ -434,23 +434,22 @@ function getWidgets() {
                 }
 
                 // set slider image
-                if (sliderContent) {
-                    document.getElementById("slider-content").innerHTML = sliderContent
-                    document.getElementById("slider-content").innerHTML += `<div class="col-6 col-md-3 col-lg-2 p-1">
-                            <div class="d-flex justify-content-center align-items-center border border-3 rounded-1 h-100 fs-2 text-secondary" style="border-style: dotted !important;cursor: pointer;" id="slider-upload">+</div>
-                        </div>`
+                sliderContent += `<div class="col-6 col-md-3 col-lg-2 p-1">
+                        <div class="d-flex justify-content-center align-items-center border border-3 rounded-1 h-100 fs-2 text-secondary" style="border-style: dotted !important;cursor: pointer;" id="slider-upload">+</div>
+                    </div>`
+                document.getElementById("slider-content").innerHTML = sliderContent
 
-                    // file upload action in slider
-                    document.getElementById("slider-upload").addEventListener("click", event => {
-                        event.preventDefault();
+                // file upload action in slider
+                document.getElementById("slider-upload").addEventListener("click", event => {
+                    event.preventDefault();
 
-                        var input = document.createElement("input");
-                        input.type = "file";
-                        input.accept = "image/*";
-                        input.onchange = (e) => { widgetFileUpload(e.target) }
-                        input.click();
-                    })
-                }
+                    var input = document.createElement("input");
+                    input.type = "file";
+                    input.accept = "image/*";
+                    input.onchange = (e) => { widgetFileUpload(e.target) }
+                    input.click();
+                })
+
 
                 // set testimonials
                 if (testimonialsContent) {
@@ -464,7 +463,26 @@ function getWidgets() {
                         widgetEdit(element.getAttribute("data-id"), element.getAttribute("data-action"), element.getAttribute("data-type"))
                     });
                 });
+            } else {
+
+                // set slider image
+                sliderContent += `<div class="col-6 col-md-3 col-lg-2 p-1">
+                        <div class="d-flex justify-content-center align-items-center border border-3 rounded-1 h-100 fs-2 text-secondary" style="border-style: dotted !important;cursor: pointer;" id="slider-upload">+</div>
+                    </div>`
+                document.getElementById("slider-content").innerHTML = sliderContent
+
+                // file upload action in slider
+                document.getElementById("slider-upload").addEventListener("click", event => {
+                    event.preventDefault();
+
+                    var input = document.createElement("input");
+                    input.type = "file";
+                    input.accept = "image/*";
+                    input.onchange = (e) => { widgetFileUpload(e.target) }
+                    input.click();
+                })
             }
+
         })
         .catch(error => {
             console.log(error)
