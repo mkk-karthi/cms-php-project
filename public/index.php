@@ -28,7 +28,7 @@ require_once "../Controllers/WidgetController.php";
 $router = new Router();
 
 $router->get('/', function () {
-    include "../Views/index.html";
+    include "../Views/index.php";
     exit;
 });
 $router->get('/admin', function () {

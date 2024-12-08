@@ -224,7 +224,7 @@ class UserController
                     $_SESSION["user"] = $user_data;
                     $_SESSION["is_admin"] = $user["role"] == 1;
 
-                    $response = ["code" => 0, "data" => $user_data, "message" => "Login success"];
+                    $response = ["code" => 0, "data" => $user_data, "message" => "Login success", "is_admin" => $_SESSION["is_admin"]];
                 } else {
                     $error_msg = "Email & password incorrect";
                 }
