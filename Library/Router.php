@@ -62,6 +62,6 @@ class Router
                 }
             }
         }
-        Helper::jsonResponse(["code" => 404, "message" => "Route not found"], 400);
+        Helper::jsonResponse(["code" => 404, "message" => "Route not found"], 404);
     }
 }
