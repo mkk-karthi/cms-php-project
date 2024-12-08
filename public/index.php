@@ -1,13 +1,4 @@
 <?php
-ini_set('display_errors', '1');
-
-require_once "../config/database.php";
-require_once "../Library/Router.php";
-require_once "../Library/Helper.php";
-
-require_once "../Controllers/UserController.php";
-require_once "../Controllers/PostController.php";
-require_once "../Controllers/WidgetController.php";
 
 // start the session
 session_start();
@@ -18,6 +9,20 @@ define('PUPLIC_PATH', __DIR__);
 // get env variables
 $env = parse_ini_file('../.env');
 define('APP_NAME', $env["APP_NAME"]);
+define('DEBUG', $env["DEBUG"]);
+define('NOTIFICATION', $env["NOTIFICATION"]);
+
+if (DEBUG)
+    ini_set('display_errors', '1');
+
+
+require_once "../config/database.php";
+require_once "../Library/Router.php";
+require_once "../Library/Helper.php";
+
+require_once "../Controllers/UserController.php";
+require_once "../Controllers/PostController.php";
+require_once "../Controllers/WidgetController.php";
 
 // define routers
 $router = new Router();
